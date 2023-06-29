@@ -9,6 +9,10 @@ from config import mysql
 import os
 import json
 from flask_cors import CORS, cross_origin
+import requests
+
+
+
 
 Session(app)
 CORS(app)
@@ -36,6 +40,8 @@ def create_database():
     cursor.execute("INSERT INTO `speakersview` (`spv_value`, `spv_title`) VALUES('',''),('respect','respect'),('def','definiteness'),('deic','deicticity'),('RPs','Relation particles or discourse particles');")
     cursor.execute("CREATE TABLE IF NOT EXISTS `deprelation` ( `dpr_id` int NOT NULL AUTO_INCREMENT, `dpr_value` varchar(45) DEFAULT NULL, `dpr_title` varchar(255) DEFAULT NULL, PRIMARY KEY (`dpr_id`) ) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;")
     cursor.execute("INSERT INTO `deprelation` (`dpr_value`, `dpr_title`) VALUES('main','main'), ('card','Cardinals'), ('dem','demonstrative'), ('intf','intensifier'), ('jk1','prayojya karta'), ('k1','kartaa'), ('k1s','karta samAnAdhikaraNa'), ('k2','karmaa'), ('k2p','gola, destination'), ('k2g','gauna karma'), ('k2s','karma samanadhikarana'), ('k3','karaNa'), ('k4','sampradana'), ('k4a','experienecer,anubhava karta'), ('k5','apadana'), ('k5prk','prakruti apadana'), ('k7','vishayadhikarana'), ('k7p','xeSaXiKaraNa'), ('k7t','kAlaXikaraNa'), ('krvn','manner adverb'), ('mk1','madhyastha karta'), ('mod','Quality'), ('neg',''), ('ord','Ordinals'), ('pk1','prayojaka karta'), ('quant','quantifier'), ('r6','sasthi or samandha pada'), ('re','relation elaboration'), ('rh','relation hetu'), ('rt','relation tadartha'), ('ru','relation upamAna'), ('rv','relation ViBAjana'), ('rd','relation direction'), ('rkl','relation kAlalakRaNa'), ('rdl','relation kAlalakRaNa'), ('rask1','relation associate kartaa'), ('rask2','relation associate karma'), ('rask4','relation associate sampradan'), ('rblak','relation Bava lakRaNa ananwarakAlika'), ('rblpk','relation Bava lakRaNa purvakAlika'), ('rpk','relation purvakalika'), ('rsm','relation sWAyi swAmi'), ('rsma','relation asWAyi swami'), ('rsk','relation samAnakAlika'), ('rhh','relation human to human'), ('rblsk','relation BAvalakRaNa samAnakAlika'), ('rvks','relation varwamAnakAlikasamAnAXikaraNa'), ('rbks','relation BhhowakAlikasamAnAXikaraNa'), ('vk2','vakya karma');")
+
+  
     mysql.connection.commit()
     return "Database Created", 200
 
@@ -96,6 +102,82 @@ def logout():
     session["logged_in"] = True
     session.clear()
     return jsonify("Logged out"), 200
+
+
+
+# @app.route('/hindigen',methods=['POST'])
+# @cross_origin()
+# def hindigen():
+#     usr = request.json['usr']
+#     usr_variable = usr
+
+#     # Get the path of the directory containing the file
+#     current_directory = os.getcwd()
+#     file_path = os.path.join(current_directory, "client-master", "src", "USRgeneration", "USR.js", )
+
+#     # Open the file in read mode
+#     with open('discoursename_receivedindex.txt', "r") as f:
+#         discourse = f.read()
+
+#     # Create a temporary file to store the discourse JSONify format
+#     temp_file_path = os.path.join(current_directory, "hindi_generation", "temp_discourse.json")
+#     with open(temp_file_path, "w") as f:
+#         f.write(json.dumps(discourse, indent=2))
+
+#     # Call the Hindi Gen program to translate the temporary file
+#     os.system("python hindi_gen.py temp_discourse.json")
+
+#     # Read the Hindi translation from the file
+#     with open("hindi_generation/hindi_translation.txt", "r") as f:
+#         hindi_translation = f.read()
+
+#     backend_url = "api/hindigen"
+#     response = requests.post(backend_url, json={"hindi_translation": hindi_translation})
+#     if response.status_code == 200:
+#         return jsonify({"success": True, "usr": usr_variable, "backend_response": response.content})
+#     else:
+#         return jsonify({"error": response.status_code})
+
+# if __name__ == "__main__":
+#     app.run(debug=True)
+
+
+
+
+@app.route('/hindigen', methods=['POST'])
+@cross_origin()
+def hindigen():
+    usr = request.json['usr']
+    usr_variable = usr
+
+    # Get the path of the directory containing the file
+    current_directory = os.getcwd()
+    file_path = os.path.join(current_directory, "client-master", "src", "USRgeneration", "USR.js", )
+
+    # Open the file in read mode
+    with open('discoursename_receivedindex.txt', "r") as f:
+        discourse = f.read()
+
+    # Create a temporary file to store the discourse JSONify format
+    temp_file_path = os.path.join(current_directory, "hindi_generation", "temp_discourse.json")
+    with open(temp_file_path, "w") as f:
+        f.write(json.dumps(discourse, indent=2))
+
+    # Call the Hindi Gen program to translate the temporary file
+    os.system("python hindi_gen.py temp_discourse.json")
+
+    # Read the Hindi translation from the file
+    with open("hindi_generation/hindi_translation.txt", "r") as f:
+        hindi_translation = f.read()
+
+    # Return the response directly without making the backend API call
+    return jsonify({"success": True, "usr": usr_variable, "hindi_translation": hindi_translation})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
 
 
 @app.route('/usrgenerate', methods=['POST'])
